@@ -1,12 +1,20 @@
 <?php
 
 /**
+ * Deploy helpers.
+ * 
+ * @author Ben Constable <ben@benconstable.co.uk>
+ * @version 1.0
+ */
+ 
+/**
  * Get a property from the loaded properties file.
  *
  * @param string $key Property name
  * @return mixed Property value or null
  */
-function getProp($key) {
+function getProp($key)
+{
 	$props = pakeApp::get_instance()->get_properties();
 	return $props[$key];
 }
@@ -18,7 +26,8 @@ function getProp($key) {
  *
  * @param &array $args Pake command line arguments
  */
-function getBranch(&$args) {
+function getBranch(&$args)
+{
 	return count($args) > 0 ? $args[0] : "staging";
 }
 
@@ -33,30 +42,30 @@ function getBranch(&$args) {
  *				 	name => full version folder name
  *					date => DateTime object, containing the version date 
  */
-function getVersions(&$args) {
-	
+function getVersions(&$args)
+{	
 	$branch 	= getBranch($args);
 	$ssh    	= getProp("ssh");
 	$site		= getProp("site");
 	$remoteRoot = getProp("remote_sites_root");
 	
-	pake_echo_action("versions","getting current versions in '$branch' for $site");
+	pake_echo_action("versions", "getting current versions in '$branch' for $site");
 	$versionList = pake_sh("ssh $ssh ls {$remoteRoot}{$site}/{$branch}/.versions/");
 	
-	if($versionList !== "") {
-		$versionNames = explode("\n",trim($versionList));
+	if ($versionList !== "") {
+		$versionNames = explode("\n", trim($versionList));
 		
 		$versions = array();
 		date_default_timezone_set("Europe/London");
 		
-		foreach($versionNames as $name) {
+		foreach ($versionNames as $name) {
 			$versions[] = array(
 				"name" => $name,
-				"date" => new DateTime(substr(strstr($name,"~"),1))
+				"date" => new DateTime(substr(strstr($name, "~"), 1))
 			);
 		}
 		
-		pake_echo_comment("Found ".count($versions)." versions");
+		pake_echo_comment("Found " . count($versions) . " versions");
 		return $versions;
 	}
 	else {
