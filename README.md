@@ -33,7 +33,7 @@ You'll need:
 - To install [Pake](https://github.com/indeyets/pake "Pake")
 - To have Git setup locally and on your server
 
-Simply clone this Git repo into your project root (just above the Symfony directory), rename or copy sample_pake_properties.ini to pake-properties.ini, then make a Pakefile just above the directory containing Compose (see below). Your resulting directory structure should look like:
+Simply clone this Git repo into your project root (just above the Symfony directory), rename or copy sample_pake_properties.ini to pake_properties.ini, then make a Pakefile just above the directory containing Compose (see below). Your resulting directory structure should look like:
 
 ```
 - my-site
