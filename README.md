@@ -8,7 +8,7 @@ Compose is built on Pake, a PHP build tool similar to Rake or Make. Compose uses
 Deployment boils down to:
 
 ```
-pake deploy {staging/live}
+pake deploy {staging/live/custom_environment}
 ```
 
 This will:
@@ -18,22 +18,27 @@ This will:
 - Archive the current version of the site
 - Make the new version of the site 'live'
 
-'live' is in inverted commas here because each site has both a `staging` and `live` branch. You can put a site live to the `staging` version, or to the `live` version. This is useful for testing on the live
-environment.
+'live' is in inverted commas here because each site has both a `staging` and `live` environment. You can put a site live to the `staging` environment, or to the `live` environment. It's up to you to point your webroot to the correct environment root.
 
 ##Setup
-You can look at the `symfony_compose` to see the basic setup for the directories. This will be implemented soon, so setup will be entirely automated. Config is separated out into `pake_properties.ini`, which mimics a PHP-style .ini file.
+Simply run `pake setup_compose` to set everything up. Symfony specific setup is not yet implemented, but will be very shortly. Config is separated out into `pake_properties.ini`, which mimics a PHP-style .ini file.
 
 ##Versioning
 The previous version of the site will always be stored, so that it can be rolled back to easily. This is handled by the `rollback` task.
 
 ##Requirements and Installation
-You'll need to install [Pake](https://github.com/indeyets/pake "Pake") first. Simply clone this Git repo into a directory just above the core Symfony directory, rename or copy sample-pake_properties.ini to pake-properties.ini, then make a Pakefile just above the directory containing Compose (see below). Your resulting directory structure should look like:
+
+You'll need:
+
+- To install [Pake](https://github.com/indeyets/pake "Pake")
+- To have Git setup locally and on your server
+
+Simply clone this Git repo into your project root (just above the Symfony directory), rename or copy sample_pake_properties.ini to pake-properties.ini, then make a Pakefile just above the directory containing Compose (see below). Your resulting directory structure should look like:
 
 ```
 - my-site
     - Symfony
-    - compose
+    - Compose
         - compose files…
     - pakefile.php
 ```
@@ -45,12 +50,14 @@ Easy!
 A typical Pakefile may look like this, and sit in the directory just above the Compose scripts:
 
 ```php
-require_once("compose/pake_helpers.php");
-require_once("compose/default_pakefile.php");
-require_once("compose/symfony_pakefile.php");
+<?php
+
+require_once("Compose/pake_helpers.php");
+require_once("Compose/default_pakefile.php");
+require_once("Compose/symfony_pakefile.php");
 
 // Load properties
-pake_properties("compose/pake_properties.ini");
+pake_properties("Compose/pake_properties.ini");
 
 /*
  * The main deploy task.
@@ -68,6 +75,8 @@ function run_deploy($obj, $args)
 {
     pake_echo_action("deploy", "finished!");
 }
+
+?>
 ```
 
 ##Links

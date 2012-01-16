@@ -124,7 +124,7 @@ function run_symfony_install_assets($obj, $args)
     
     // dump assets
     pake_echo_action("dumping assets", "dumping assets to web/");
-    pake_echo_comment(pake_sh("ssh $ssh php $site_symfony_path/app/console assetic:dump --env=prod --no-debug");
+    pake_echo_comment(pake_sh("ssh $ssh php $site_symfony_path/app/console assetic:dump --env=prod --no-debug"));
     
     // make assets directory read only
     pake_echo_action("changing permissions", "disallowing Symfony to write to the web/assets directory");

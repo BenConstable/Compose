@@ -16,11 +16,13 @@ function run_setup_compose($obj, $args)
 {
     $ssh = get_prop("ssh");
     $site = get_prop("site");
+    $server_remote = get_prop("server_remote_name");
     $remote_git_root  = get_prop("remote_git_root") . "/$site";
     $remote_site_root = get_prop("remote_sites_root") . "/$site";
     
-    // Create directory
+    // Create directories
     pake_echo_comment(pake_sh("ssh $ssh mkdir $remote_git_root"));
+    pake_echo_comment(pake_sh("ssh $ssh mkdir $remote_site_root"));
     
     // Setup repo
     pake_echo_comment(pake_sh("ssh $ssh git --git-dir=\"$remote_git_root\" init --bare"));
@@ -28,9 +30,12 @@ function run_setup_compose($obj, $args)
     // Create environments
     run_setup_environment(false, array("staging"));
     run_setup_environment(false, array("live"));
+    
+    // Setup remote
+    pake_echo_comment(pake_sh("git remote add $server_remote $ssh:$remote_git_root.git"));
 }
 
-pake_desc("Setup directory structure, permissions and Git remote for a Compose site environment");
+pake_desc("Setup directory structure and permissions for a Compose site environment");
 pake_task("setup_environment");
 function run_setup_environment($obj, $args)
 {
@@ -41,9 +46,7 @@ function run_setup_environment($obj, $args)
     $remote_site_root = get_prop("remote_sites_root") . "/$site";
     
     if ($env) {
-        // Create new remote branch
-        pake_echo_comment(pake_sh("ssh $ssh git --git-dir=\"$remote_git_root\" branch $env"));
-        
+                
         // Create directory structure
         pake_echo_comment(pake_sh("ssh $ssh mkdir $remote_site_root/$env"));
         pake_echo_comment(pake_sh("ssh $ssh mkdir $remote_site_root/$env/.versions"));
@@ -51,11 +54,11 @@ function run_setup_environment($obj, $args)
         pake_echo_comment(pake_sh("ssh $ssh touch $remote_site_root/$env/current"));
         
         // Setup permissions
-        pake_echo_comment(pake_sh("shh $ssh chgrp -R $remote_site_root/$env/shared www-data"));
-        pake_echo_comment(pake_sh("shh $ssh chmod -R g=rx $remote_site_root/$env/shared"));
-        pake_echo_comment(pake_sh("shh $ssh chmod -R u=rwx $remote_site_root/$env/shared"));
-        pake_echo_comment(pake_sh("shh $ssh chmod -R u=rwx $remote_site_root/$env/.versions"));
-        pake_echo_comment(pake_sh("shh $ssh chmod -R u=rwx $remote_site_root/$env/current"));
+        pake_echo_comment(pake_sh("ssh $ssh chgrp -R www-data $remote_site_root/$env/shared"));
+        pake_echo_comment(pake_sh("ssh $ssh chmod -R g=rx $remote_site_root/$env/shared"));
+        pake_echo_comment(pake_sh("ssh $ssh chmod -R u=rwx $remote_site_root/$env/shared"));
+        pake_echo_comment(pake_sh("ssh $ssh chmod -R u=rwx $remote_site_root/$env/.versions"));
+        pake_echo_comment(pake_sh("ssh $ssh chmod -R u=rwx $remote_site_root/$env/current"));
     }
     else {
         pake_echo_error("No environment name given");
