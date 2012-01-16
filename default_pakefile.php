@@ -10,8 +10,28 @@
  * @version 1.0
  */
 
+pake_desc("Do initial setup. Make the remote Git repo, the site folder and the live and staging environments");
+pake_task("setup_compose");
+function run_setup_compose($obj, $args)
+{
+    $ssh = get_prop("ssh");
+    $site = get_prop("site");
+    $remote_git_root  = get_prop("remote_git_root") . "/$site";
+    $remote_site_root = get_prop("remote_sites_root") . "/$site";
+    
+    // Create directory
+    pake_echo_comment(pake_sh("ssh $ssh mkdir $remote_git_root"));
+    
+    // Setup repo
+    pake_echo_comment(pake_sh("ssh $ssh git --git-dir=\"$remote_git_root\" init --bare"));
+    
+    // Create environments
+    run_setup_environment(false, array("staging"));
+    run_setup_environment(false, array("live"));
+}
+
 pake_desc("Setup directory structure, permissions and Git remote for a Compose site environment");
-pake_task("pake_setup_environment");
+pake_task("setup_environment");
 function run_setup_environment($obj, $args)
 {
     $env              = $args[0];
