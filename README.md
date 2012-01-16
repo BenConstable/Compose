@@ -1,8 +1,8 @@
 #Compose
-Compose is a Git based PHP deploy tool for web applications. It is targeted and deploying Symfony 2 projects.
+Compose is a Git based PHP deploy tool for web applications. It is targeted at deploying Symfony 2 projects, although it can be used for any sort of web application.
 
 ##Pake
-Compose is built on Pake, a PHP build script similar to Rake or Make. Compose uses Pake to keep everything in PHP - why use other languages when you can do everything with one?
+Compose is built on Pake, a PHP build tool similar to Rake or Make. Compose uses Pake to keep everything in PHP - why use other languages when you can do everything with one?
 
 ##Deployment
 Deployment boils down to:
@@ -27,8 +27,48 @@ You can look at the `symfony_compose` to see the basic setup for the directories
 ##Versioning
 The previous version of the site will always be stored, so that it can be rolled back to easily. This is handled by the `rollback` task.
 
-##Requirements
-You'll need to install [Pake](https://github.com/indeyets/pake "Pake") first. To make sure that the correct permissions are setup for the Symfony cache/ and logs/ directories you'll need to have a system with `chmod +a` setup, or install [setfacl]( "setfacl"). The Symfony website has [more details](http://symfony.com/doc/current/book/installation.html "Symfony Configuration").
+##Requirements and Installation
+You'll need to install [Pake](https://github.com/indeyets/pake "Pake") first. Simply clone this Git repo into a directory just above the core Symfony directory, rename or copy sample-pake_properties.ini to pake-properties.ini, then make a Pakefile just above the directory containing Compose (see below). Your resulting directory structure should look like:
+
+```
+- my-site
+    - Symfony
+    - compose
+        - compose files…
+    - pakefile.php
+```
+
+Easy!
+
+##Example Pakefile
+
+A typical Pakefile may look like this, and sit in the directory just above the Compose scripts:
+
+```php
+require_once("compose/pake_helpers.php");
+require_once("compose/default_pakefile.php");
+require_once("compose/symfony_pakefile.php");
+
+// Load properties
+pake_properties("compose/pake_properties.ini");
+
+/*
+ * The main deploy task.
+ *
+ * This task should be used to do your deployment.
+ * compose/default_pakefile.php provides a number of
+ * useful tasks that you can depend on in this task.
+ *
+ * @param $obj  Task object
+ * @param $args Command line arguments
+ */
+pake_desc("Deploy!");
+pake_task('deploy'/*, dependencies… */);
+function run_deploy($obj, $args)
+{
+    pake_echo_action("deploy", "finished!");
+}
+```
 
 ##Links
 
