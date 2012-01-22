@@ -115,11 +115,12 @@ pake_desc("Push the local site version to the server on the given environment");
 pake_task("push_server", "checkout_local_branch");
 function run_push_server($obj, $args)
 {	
-    $env    = get_environment($args);
-    $server = get_prop("server_remote_name");
+    $env          = get_environment($args);
+    $local_branch = get_prop("local_branch");
+    $server       = get_prop("server_remote_name");
     
     pake_echo_action("push", "pushing to '$env' environment on the server");
-    pake_echo_comment(pake_sh("git push $server dev:$env"));
+    pake_echo_comment(pake_sh("git push $server $local_branch:$env"));
 }
 
 /*
