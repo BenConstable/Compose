@@ -1,4 +1,4 @@
-#Compose
+#Compose - Symfony and general PHP application deployment
 Compose is a Git based PHP deploy tool for web applications. It is targeted at deploying Symfony 2 projects, although it can be used for any sort of web application.
 
 ##Pake
@@ -20,30 +20,56 @@ This will:
 
 'live' is in inverted commas here because each site has both a `staging` and `live` environment. You can put a site live to the `staging` environment, or to the `live` environment. It's up to you to point your webroot to the correct environment root.
 
-##Setup
-Simply run `pake setup_compose` to set everything up. Symfony specific setup is not yet implemented, but will be very shortly. Config is separated out into `pake_properties.ini`, which mimics a PHP-style .ini file.
-
 ##Versioning
 The previous version of the site will always be stored, so that it can be rolled back to easily. This is handled by the `rollback` task.
 
-##Requirements and Installation
+##Setup and usage
+
+###Symfony and everything else
+- Install everything (see below)
+- Copy sample_pake_properties.ini to pake_properties.ini
+- Change the settings in your newly copied file to get everything ready
+- Make a custom Pakefile (pakefile.php) in your project root (see below for an example)
+- Your local directory should now look like:
+
+```
+- Compose
+    - compose files…
+- pakefile.php
+- Your website files… 
+```
+
+Once you've run the appropriate setup commands (see below), just point your vhost web root to your desired environment files and you're away!
+
+###Everything else
+Simply run `pake setup_compose` in your project root to set everything up. When you want to deploy, commit all your changes with Git and run `pake deploy {environment}`.
+
+###Symfony
+Run `pake symfony_setup_compose` in your project to do almost all the setup you'll need. When this has finished (which may take a couple of minutes), you'll need to jump on the server and use `chmod +a` or `setfacl` ([see here](http://symfony.com/doc/current/book/installation.html#configuration-and-setup "Symfony configuration")) to make sure that your `cache` and `log` directories (they're found in `your-environment/shared/Symfony/app`) are writeable by both your web and ssh users. You'll also need to make any appropriate changes to your .htaccess file (`your-environment/shared/Symfony/web`).
+
+Finally, change your .gitignore file to include the following:
+
+```
+/Symfony/vendor*
+/Symfony/app/cache*
+/Symfony/app/logs*
+/Symfony/bin*
+/Symfony/deps*
+/Symfony/web/.htaccess
+/Syfmony/web/bundles*
+```
+
+After this, commit all your changes with Git and run `pake deploy {environment}` and you'll be up and running.
+
+##Requirements and installation
 
 You'll need:
 
 - To install [Pake](https://github.com/indeyets/pake "Pake")
 - To have Git setup locally and on your server
+- rsync if you're going to be using Compose to deploy Symfony applications
 
-Simply clone this Git repo into your project root (just above the Symfony directory), rename or copy sample_pake_properties.ini to pake_properties.ini, then make a Pakefile just above the directory containing Compose (see below). Your resulting directory structure should look like:
-
-```
-- my-site
-    - Symfony
-    - Compose
-        - compose files…
-    - pakefile.php
-```
-
-Easy!
+Simply clone this Git repo into your project root (just above the Symfony directory).
 
 ##Example Pakefile
 
@@ -63,14 +89,15 @@ pake_properties("Compose/pake_properties.ini");
  * The main deploy task.
  *
  * This task should be used to do your deployment.
- * compose/default_pakefile.php provides a number of
- * useful tasks that you can depend on in this task.
+ * 
+ * This example shows the dependencies you'll need to deploy
+ * a Symfony project.
  *
  * @param $obj  Task object
  * @param $args Command line arguments
  */
 pake_desc("Deploy!");
-pake_task('deploy'/*, dependencies… */);
+pake_task('deploy', 'default_deploy', 'symfony_deploy' /* omit the symfony deploy dependency for a non-Symfony application */);
 function run_deploy($obj, $args)
 {
     pake_echo_action("deploy", "finished!");

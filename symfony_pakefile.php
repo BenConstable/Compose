@@ -1,12 +1,21 @@
 <?php
 
-/**
+/*
  * Symfony-specific deploy tasks.
  * 
+ * @package Compose
  * @author Ben Constable <ben@benconstable.co.uk>
  * @version 1.0
  */
 
+/*
+ * Add Symfony files to an existing Compose environment.
+ *
+ * Requires rsync to send over some Symfony files. May take a few minutes
+ * as `vendors install` is run.
+ *
+ * @param string (1st arg) Environment name (optional, 'staging' by default)  
+ */
 pake_desc("Add Symfony files to an environment");
 pake_task("symfony_setup_environment");
 function run_symfony_setup_environment($obj, $args)
@@ -18,7 +27,9 @@ function run_symfony_setup_environment($obj, $args)
     $remote_site_shared = get_prop("remote_sites_root") . "/$site/$env/shared";
     
     if ($env) {
-    
+        
+        pake_echo_action("SETUP SYMFONY ENV", "** Setting up Symfony files in the '$env' environment **");
+        
         // Create Symfony directories
         pake_echo_comment(pake_sh("ssh $ssh mkdir $remote_site_shared/Symfony"));
         pake_echo_comment(pake_sh("ssh $ssh mkdir $remote_site_shared/Symfony/app"));
@@ -48,10 +59,18 @@ function run_symfony_setup_environment($obj, $args)
     }
 }
 
-pake_desc("Setup the correct directory structure for Compose");
+/*
+ * Setup Compose for use with a Symfony project.
+ *
+ * Creates two environments - 'live' and 'staging'. See the `setup_compose` task in
+ * default_pakefile.php for more info.
+ */
+pake_desc("Setup Compose for a Symfony project");
 pake_task("symfony_setup_compose", "setup_compose");
 function run_symfony_setup_compose($obj, $args)
-{  
+{
+    pake_echo_action("SETUP SYMFONY", "** Setting up Compose for Symfony **");
+    
     run_symfony_setup_environment(false, array("staging"));
     run_symfony_setup_environment(false, array("live"));
 }
@@ -72,20 +91,13 @@ function run_symfony_create_symlinks($obj, $args)
     $site_shared_path  = get_prop("remote_sites_root") . "/$site/$env/shared/Symfony";
     $site_symfony_path = get_prop("remote_sites_root") . "/$site/$env/current/Symfony";
     
+    pake_echo_action("LINKING", "** Creating Symfony symlinks from the shared/ directory to the new site version **");
+    
     // create symlinks for vendor/, app/cache, app/logs, web/user-uploads folder and web/.htaccess
-    pake_echo_action("linking", "creating symlink for vendor directory");
     pake_echo_comment(pake_sh("ssh $ssh ln -s $site_shared_path/vendor/ $site_symfony_path/vendor"));
-    
-    pake_echo_action("linking", "creating symlink for app/cache directory");
     pake_echo_comment(pake_sh("ssh $ssh ln -s $site_shared_path/app/cache $site_symfony_path/app/cache"));	
-    
-    pake_echo_action("linking", "creating symlink for app/logs");
     pake_echo_comment(pake_sh("ssh $ssh ln -s $site_shared_path/app/logs $site_symfony_path/app/logs"));
-    
-    pake_echo_action("linking", "creating symlink for web/$symfony_uploads");
     pake_echo_comment(pake_sh("ssh $ssh ln -s $site_shared_path}/web/user-uploads $site_symfony_path/web/$symfony_uploads"));
-    
-    pake_echo_action("linking", "creating symlink for web/.htaccess");
     pake_echo_comment(pake_sh("ssh $ssh ln -s $site_shared_path/web/.htaccess $site_symfony_path/web/.htaccess"));
 }
 
@@ -106,8 +118,8 @@ function run_symfony_clear_cache($obj, $args)
     $site             = get_prop("site");
     $site_shared_path = get_prop("remote_sites_root"). "/$site/{$env}/shared/Symfony";
     
-    // clear the cache
-    pake_echo_action("clear cache", "clearing the cache for all environments");
+    // Clear the cache
+    pake_echo_action("CLEARING CACHE", "** Clearing the Symfony project cache **");
     pake_echo_comment(pake_sh("ssh $ssh rm -Rf $site_shared_path/app/cache/*"));
 }
 
@@ -130,20 +142,18 @@ function run_symfony_install_assets($obj, $args)
     $site              = get_prop("site");
     $site_symfony_path = get_prop("remote_sites_root") . "/$site/$env/current/Symfony";
     
-    // make assets directory writable
-    pake_echo_action("changing permissions", "allowing Symfony to write to the web directory");
+    pake_echo_action("INSTALLING ASSETS", "** Installing Assetic assets, ready for production **");
+    
+    // Make assets directory writable
     pake_echo_comment(pake_sh("ssh $ssh chmod -R g=rwx $site_symfony_path/web"));
     
-    // install assets
-    pake_echo_action("installing assets", "installing assets from bundles to web/");
+    // Install assets
     pake_echo_comment(pake_sh("ssh $ssh php $site_symfony_path/app/console assets:install --symlink $site_symfony_path/web"));
     
-    // dump assets
-    pake_echo_action("dumping assets", "dumping assets to web/");
+    // Dump assets
     pake_echo_comment(pake_sh("ssh $ssh php $site_symfony_path/app/console assetic:dump --env=prod --no-debug"));
     
-    // make assets directory read only
-    pake_echo_action("changing permissions", "disallowing Symfony to write to the web/assets directory");
+    // Make assets directory read only
     $result = pake_sh("ssh $ssh chgrp -R www-data $site_symfony_path/web");
     $result .= pake_sh("ssh $ssh chmod -R g=rx $site_symfony_path/web");
     pake_echo_comment($result);
@@ -159,7 +169,7 @@ pake_desc("Do all the necessary things to deploy Symfony");
 pake_task("symfony_deploy", "symfony_create_symlinks", "symfony_clear_cache", "symfony_install_assets");
 function run_symfony_deploy($obj, $args)
 {
-    pake_echo_comment("Symfony deployed!");
+    pake_echo_action("DEPLOYED", "** Symfony has finished deploying **");
 }
 
 ?>

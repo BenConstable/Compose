@@ -1,8 +1,9 @@
 <?php
 
-/**
+/*
  * Compose helper functions.
- * 
+ *
+ * @package Compose 
  * @author Ben Constable <ben@benconstable.co.uk>
  * @version 1.0
  */
