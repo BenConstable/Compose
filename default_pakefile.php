@@ -39,7 +39,7 @@ pake_desc("Setup directory structure and permissions for a Compose site environm
 pake_task("setup_environment");
 function run_setup_environment($obj, $args)
 {
-    $env              = $args[0];
+    $env              = get_environment($args);
     $ssh              = get_prop("ssh");
     $site             = get_prop("site");
     $remote_git_root  = get_prop("remote_git_root") . "/$site";

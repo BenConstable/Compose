@@ -7,38 +7,53 @@
  * @version 1.0
  */
 
-pake_desc("Setup the correct directory structure for Compose");
-pake_task("symfony_compose");
-function run_symfony_compose($obj, $args)
+pake_desc("Add Symfony files to an environment");
+pake_task("symfony_setup_environment");
+function run_symfony_setup_environment($obj, $args)
 {
-	// Make git repo folder
-        // git init --bare
+    $env                = get_environment($args);
+    $ssh                = get_prop("ssh");
+    $site               = get_prop("site");
+    $symfony_uploads    = get_prop("user-uploads");
+    $remote_site_shared = get_prop("remote_sites_root") . "/$site/$env/shared";
     
-	// Make Site folder
-	
-	// Make live folder
-	   // .versions
-	   // shared
-	       // Symfony
-	           // app/
-	               // cache
-	               // logs
-	           // deps
-	           // deps.lock
-	           // bin/vendors
-	           // web/
-	               // user-uploads
-	   // current (file)
-    // Run vendors install
-    // Chgrp of shared to www-data
-    // make user-uploads directory writable
-    // use acl or +a on cache and logs?
+    if ($env) {
     
-    // Do exactly the same as above for staging folder
-    
-    // Setup 'server' remote
-    
-    // Done
+        // Create Symfony directories
+        pake_echo_comment(pake_sh("ssh $ssh mkdir $remote_site_shared/Symfony"));
+        pake_echo_comment(pake_sh("ssh $ssh mkdir $remote_site_shared/Symfony/app"));
+        pake_echo_comment(pake_sh("ssh $ssh mkdir $remote_site_shared/Symfony/app/cache"));
+        pake_echo_comment(pake_sh("ssh $ssh mkdir $remote_site_shared/Symfony/app/logs"));
+        pake_echo_comment(pake_sh("ssh $ssh mkdir $remote_site_shared/Symfony/bin"));
+        pake_echo_comment(pake_sh("ssh $ssh mkdir $remote_site_shared/Symfony/web"));
+        pake_echo_comment(pake_sh("ssh $ssh mkdir $remote_site_shared/Symfony/web/$symfony_uploads"));
+        
+        // Copy over local Symfony files
+        pake_echo_comment(pake_sh("rsync -vaz Symfony/bin/vendors $ssh:$remote_site_shared/Symfony/bin"));
+        pake_echo_comment(pake_sh("rsync -vaz Symfony/deps $ssh:$remote_site_shared/Symfony"));
+        pake_echo_comment(pake_sh("rsync -vaz Symfony/deps.lock $ssh:$remote_site_shared/Symfony"));
+        pake_echo_comment(pake_sh("rsync -vaz Symfony/web/.htaccess $ssh:$remote_site_shared/Symfony/web"));
+        
+        // Install Symfony vendors
+        pake_echo_comment(pake_sh("ssh $ssh php $remote_site_shared/Symfony/bin/vendors install"));
+        
+        // Update permissions
+        pake_echo_comment(pake_sh("ssh $ssh chgrp -R www-data $remote_site_shared"));
+        pake_echo_comment(pake_sh("ssh $ssh chmod -R g=rx $remote_site_shared"));
+        pake_echo_comment(pake_sh("ssh $ssh chmod -R u=rwx $remote_site_shared"));
+        pake_echo_comment(pake_sh("ssh $ssh chmod -R g=rwx $remote_site_shared/Symfony/web/$symfony_uploads"));
+    }
+    else {
+        pake_echo_error("No environment name given");
+    }
+}
+
+pake_desc("Setup the correct directory structure for Compose");
+pake_task("symfony_setup_compose", "setup_compose");
+function run_symfony_setup_compose($obj, $args)
+{  
+    run_symfony_setup_environment(false, array("staging"));
+    run_symfony_setup_environment(false, array("live"));
 }
 
 /*
@@ -53,10 +68,11 @@ function run_symfony_create_symlinks($obj, $args)
     $env   		       = get_environment($args);
     $ssh      		   = get_prop("ssh");
     $site     		   = get_prop("site");
+    $symfony_uploads   = get_prop("user-uploads");
     $site_shared_path  = get_prop("remote_sites_root") . "/$site/$env/shared/Symfony";
     $site_symfony_path = get_prop("remote_sites_root") . "/$site/$env/current/Symfony";
     
-    // create symlinks for vendor/, app/cache, app/logs, web/user-uploads and web/.htaccess
+    // create symlinks for vendor/, app/cache, app/logs, web/user-uploads folder and web/.htaccess
     pake_echo_action("linking", "creating symlink for vendor directory");
     pake_echo_comment(pake_sh("ssh $ssh ln -s $site_shared_path/vendor/ $site_symfony_path/vendor"));
     
@@ -66,8 +82,8 @@ function run_symfony_create_symlinks($obj, $args)
     pake_echo_action("linking", "creating symlink for app/logs");
     pake_echo_comment(pake_sh("ssh $ssh ln -s $site_shared_path}/app/logs $site_symfony_path/app/logs"));
     
-    pake_echo_action("linking", "creating symlink for web/user-uploads");
-    pake_echo_comment(pake_sh("ssh $ssh ln -s $site_shared_path}/web/user-uploads $site_symfony_path/web/user-uploads"));
+    pake_echo_action("linking", "creating symlink for web/$symfony_uploads");
+    pake_echo_comment(pake_sh("ssh $ssh ln -s $site_shared_path}/web/user-uploads $site_symfony_path/web/$symfony_uploads"));
     
     pake_echo_action("linking", "creating symlink for web/.htaccess");
     pake_echo_comment(pake_sh("ssh $ssh ln -s $site_shared_path/web/.htaccess $site_symfony_path/web/.htaccess"));
