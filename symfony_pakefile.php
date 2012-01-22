@@ -80,7 +80,7 @@ function run_symfony_create_symlinks($obj, $args)
     pake_echo_comment(pake_sh("ssh $ssh ln -s $site_shared_path/app/cache $site_symfony_path/app/cache"));	
     
     pake_echo_action("linking", "creating symlink for app/logs");
-    pake_echo_comment(pake_sh("ssh $ssh ln -s $site_shared_path}/app/logs $site_symfony_path/app/logs"));
+    pake_echo_comment(pake_sh("ssh $ssh ln -s $site_shared_path/app/logs $site_symfony_path/app/logs"));
     
     pake_echo_action("linking", "creating symlink for web/$symfony_uploads");
     pake_echo_comment(pake_sh("ssh $ssh ln -s $site_shared_path}/web/user-uploads $site_symfony_path/web/$symfony_uploads"));
