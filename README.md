@@ -45,7 +45,7 @@ Once you've run the appropriate setup commands (see below), just point your vhos
 Simply run `pake setup_compose` in your project root to set everything up. When you want to deploy, commit all your changes with Git and run `pake deploy {environment}`.
 
 ###Symfony
-Run `pake symfony_setup_compose` in your project to do almost all the setup you'll need. When this has finished (which may take a couple of minutes), you'll need to jump on the server and use `chmod +a` or `setfacl` ([see here](http://symfony.com/doc/current/book/installation.html#configuration-and-setup "Symfony configuration")) to make sure that your `cache` and `log` directories (they're found in `your-environment/shared/Symfony/app`) are writeable by both your web and ssh users. You'll also need to make any appropriate changes to your .htaccess file (`your-environment/shared/Symfony/web`).
+Run `pake symfony_setup_compose` in your project root to do almost all the setup you'll need. When this has finished (which may take a couple of minutes), you'll need to jump on the server and use `chmod +a` or `setfacl` ([see here](http://symfony.com/doc/current/book/installation.html#configuration-and-setup "Symfony configuration")) to make sure that your `cache` and `log` directories (they're found in `your-environment/shared/Symfony/app`) are writeable by both your web and ssh users. You'll also need to make any appropriate changes to your .htaccess file (`your-environment/shared/Symfony/web`).
 
 Finally, change your .gitignore file to include the following:
 
@@ -97,10 +97,10 @@ pake_properties("Compose/pake_properties.ini");
  * @param $args Command line arguments
  */
 pake_desc("Deploy!");
-pake_task('deploy', 'default_deploy', 'symfony_deploy' /* omit the symfony deploy dependency for a non-Symfony application */);
+pake_task('deploy', 'default_deploy', 'symfony_deploy' /* omit the symfony_deploy dependency for a non-Symfony application */);
 function run_deploy($obj, $args)
 {
-    pake_echo_action("deploy", "finished!");
+    pake_echo_action("DEPLOYED", "** Application has finished deploying **");
 }
 
 ?>
