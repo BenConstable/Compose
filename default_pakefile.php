@@ -32,7 +32,7 @@ function run_setup_compose($obj, $args)
     run_setup_environment(false, array("live"));
     
     // Setup remote
-    pake_echo_comment(pake_sh("git remote add $server_remote $ssh:$remote_git_root.git"));
+    pake_echo_comment(pake_sh("git remote add $server_remote $ssh:$remote_git_root"));
 }
 
 pake_desc("Setup directory structure and permissions for a Compose site environment");
