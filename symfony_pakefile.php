@@ -14,7 +14,7 @@ function run_symfony_setup_environment($obj, $args)
     $env                = get_environment($args);
     $ssh                = get_prop("ssh");
     $site               = get_prop("site");
-    $symfony_uploads    = get_prop("user-uploads");
+    $symfony_uploads    = get_prop("symfony_uploads_dir");
     $remote_site_shared = get_prop("remote_sites_root") . "/$site/$env/shared";
     
     if ($env) {
@@ -68,7 +68,7 @@ function run_symfony_create_symlinks($obj, $args)
     $env   		       = get_environment($args);
     $ssh      		   = get_prop("ssh");
     $site     		   = get_prop("site");
-    $symfony_uploads   = get_prop("user-uploads");
+    $symfony_uploads   = get_prop("symfony_uploads_dir");
     $site_shared_path  = get_prop("remote_sites_root") . "/$site/$env/shared/Symfony";
     $site_symfony_path = get_prop("remote_sites_root") . "/$site/$env/current/Symfony";
     
