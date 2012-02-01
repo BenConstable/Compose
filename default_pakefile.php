@@ -175,7 +175,7 @@ function run_remove_old_version($obj, $args)
             }
             
             pake_echo_action("REMOVE", "** Removing site version dated " . $oldest_date->format("Y-m-d H:i:s") . " **");
-            pake_echo_comment("ssh $ssh rm -R $remote_root/$site/$env/.versions/$oldest");
+            pake_echo_comment(pake_sh("ssh $ssh rm -R $remote_root/$site/$env/.versions/$oldest"));
         }
         else {
             pake_echo_error("Only one version found, will not remove");
