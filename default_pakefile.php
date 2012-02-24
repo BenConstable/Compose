@@ -153,7 +153,7 @@ pake_desc("Remove the oldest version of a site from .versions/ directory");
 pake_task("remove_old_version");
 function run_remove_old_version($obj, $args)
 {
-    $env 	     = get_environment($env);
+    $env 	     = get_environment($args);
     $ssh    	 = get_prop("ssh");
     $site		 = get_prop("site");
     $remote_root = get_prop("remote_sites_root");
